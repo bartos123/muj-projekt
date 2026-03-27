@@ -9,10 +9,10 @@ function App() {
       justifyContent: 'center', 
       height: '100vh', 
       fontFamily: 'sans-serif',
-      backgroundColor: '#1a1a1a',
+      backgroundColor: '#ad1a1a',
       color: 'white'
     }}>
-      <h1 style={{ color: '#646cff' }}>Den 1</h1>
+      <h1 style={{ color: '#646cff' }}>Den 1: zaciname!</h1>
       <p style={{ fontSize: '1.5rem' }}>Status: <b>5 vajec v sobe</b> 🥚</p>
       <div style={{ 
         padding: '20px', 
