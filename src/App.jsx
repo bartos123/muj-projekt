@@ -29,9 +29,18 @@ function App() {
           borderRadius: '8px', fontWeight: 'bold', marginTop: '20px'
         }}
       >
-        Sníst další vejce!
+               Sníst další vejce!
       </button>
 
+      <button 
+        onClick={() => setEggs(0)}
+        style={{
+          padding: '10px 20px', fontSize: '1rem', cursor: 'pointer',
+          backgroundColor: '#888', color: 'white', border: 'none',
+          borderRadius: '8px', fontWeight: 'bold', marginTop: '10px'
+      }}>
+        Vygrcat vajca
+      </button>
       <p style={{ marginTop: '30px', color: '#888', fontStyle: 'italic' }}>
         „Silene dulezita aplikace“ <br/>
       </p>
