@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import StockCard from './StockCard.jsx' // Importujeme naši novou součástku
 
 function App() {
-  const API_KEY = 'd73qc69r01qjjol3v9f0d73qc69r01qjjol3v9fg'
+  const API_KEY = import.meta.env.VITE_FINNHUB_API_KEY;
   const [eggs, setEggs] = useState(Number(localStorage.getItem('eggs')) || 0)
   const [time, setTime] = useState(new Date())
   const [searchQuery, setSearchQuery] = useState('')
@@ -106,5 +106,5 @@ const removeFromWatchlist = (symbolToRemove) => {
     </div>
   )
 }
-
+//ahojky
 export default App
