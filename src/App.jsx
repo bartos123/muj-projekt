@@ -62,8 +62,8 @@ function App() {
 
   const celkovePortfolio = watchlist.reduce((sum, item) => {
     const data = prices[item.symbol];
-    const price = data ? data.p : 0;
-    return sum + (price * item.shares);
+    const price = data ? Number(data.p) : 0;
+    return sum + (price * Number(item.shares)) || 0;
   }, 0);
 
   const addToWatchlist = async () => {
