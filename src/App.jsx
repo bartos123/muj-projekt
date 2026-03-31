@@ -75,7 +75,7 @@ function App() {
     }
     
     try {
-      const res = await fetch(`https://finnhub.io/api/v1/quote?symbol=${cleanQuery}&token=${API_KEY}`);
+      const res =  await fetch(`https://finnhub.io/api/v1/quote?symbol=${cleanQuery}&token=${API_KEY}`);
       const data = await res.json();
 
       if (data.c === 0 || data.d === null) {
@@ -110,14 +110,15 @@ function App() {
     <div className="min-h-screen bg-[#0f172a] text-slate-200 p-6 md:p-12 font-sans">
       <header className="max-w-6xl mx-auto mb-10 flex justify-between items-end">
         <div>
-          <h1 className="text-3xl font-bold text-white tracking-tight italic uppercase">Fintech <span className="text-indigo-500">Terminal</span></h1>
+          <h1 className="text-3xl font-bold text-white tracking-tight italic uppercase">MUJ PROJEKT123</h1>
         </div>
         <div className="font-mono text-indigo-400 hidden sm:block bg-slate-800/50 px-4 py-2 rounded-lg border border-slate-700">
           {time.toLocaleTimeString("cs-CZ")}
         </div>
       </header>
 
-      <section className="max-w-6xl mx-auto mb-8 flex gap-2">
+      <section className="max-w-6xl mx-auto mb-8 flex gap-2 ">
+        <section className="duration-300 flex-1 hover:scale-101">
         <input 
           type="text" 
           value={searchQuery}
@@ -126,19 +127,21 @@ function App() {
           placeholder="Hledej symbol (TSLA, NVDA...)"
           className="bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 w-full text-white focus:border-indigo-500 outline-none transition-all"
         />
+        </section>
         <button onClick={addToWatchlist} className="bg-indigo-600 px-8 rounded-xl font-bold hover:bg-indigo-500 transition-all shadow-lg shadow-indigo-500/20 active:scale-95">
           Přidat
         </button>
       </section>
 
-      <main className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <main className="max-w-6xl mx-auto grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2">
         
         {/* DASHBOARD - CELKOVÉ PENÍZE */}
-        <div className="bg-gradient-to-br from-indigo-800 to-red-400 rounded-3xl shadow-2xl shadow-indigo-500/20 flex flex-col justify-center text-center p-8 border border-white/10 min-h-[160px]">
+        <div className="bg-gradient-to-br from-indigo-800 to-red-400 rounded-3xl shadow-2xl shadow-indigo-500/20 flex flex-col justify-center text-center p-5 border border-white/10 min-h-[160px]">
           <div className="text-[10px] font-bold mb-2 uppercase tracking-widest text-indigo-100 opacity-80">Aktuální hodnota portfolia</div>
-          <div className="text-4xl font-black text-white">
+          <div className="text-2xl font-black text-white">
             ${celkovePortfolio.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}
           </div>
+          
         </div>
 
         {/* VEJCOMĚR */}
