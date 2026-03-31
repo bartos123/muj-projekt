@@ -39,13 +39,13 @@ return (
         LIVE MARKET
       </span>
       <span className={`font-bold text-sm px-3 py-1 rounded-lg ${change >= 0 ? 'bg-emerald-950/40 text-emerald-400' : 'bg-red-950/40 text-red-400'}`}>
-        {change >= 0 ? '+' : ''}{change.toFixed(2)}%
+        {typeof change === 'number' ? `${change >= 0 ? '+' : ''}${change.toFixed(2)}%` : '0.00%'}
       </span>          
     </div>
 
     <h3 className="text-slate-400 text-sm font-medium uppercase mb-1">{symbol}</h3>
     <div className="text-4xl font-bold text-white mb-4">
-      ${price ? price.toFixed(2) : '...'}
+      ${typeof price === 'number' ? price.toFixed(2) : '...'}
     </div>
     <p className="text-[10px] text-slate-500 mt-2 italic">Live data via Finnhub</p>
   </div>
