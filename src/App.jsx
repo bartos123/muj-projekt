@@ -1,6 +1,8 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import StockCard from './StockCard.jsx'
 
+
+const COLORS = ['#6366f1', '#ec4899', '#8b5cf6', '#22c55e', '#f59e0b', '#ef4444', '#06b6d4'];
 function App() {
   const API_KEY = import.meta.env.VITE_FINNHUB_API_KEY;
 
@@ -9,7 +11,7 @@ function App() {
   const [time, setTime] = useState(new Date())
   const [searchQuery, setSearchQuery] = useState('')
   const [prices, setPrices] = useState({}); // Tady ukládáme { 'AAPL': {p: 150, d: 2}, ... }
-  
+  const searchInputRef = useRef(null);
   const [watchlist, setWatchlist] = useState(() => {
     const saved = localStorage.getItem('watchlist')
     return saved ? JSON.parse(saved) : []
@@ -31,6 +33,7 @@ function App() {
     }
   };
 
+
   // 2. FUNKCE PRO REFRESH VŠEHO
   const refreshAllPrices = () => {
     watchlist.forEach(item => {
@@ -51,7 +54,16 @@ function App() {
       clearInterval(refreshTimer);
     };
   }, [watchlist.length]); // Spustí se znovu jen když přidáš/smažeš akcii
-
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Enter' && document.activeElement.tagName !== 'INPUT') {
+        e.preventDefault();
+        searchInputRef.current?.focus();
+      }
+      };
+      window.addEventListener('keydown', handleKeyDown);
+      return () => window.removeEventListener('keydown', handleKeyDown);
+    }, []);
   // 4. POMOCNÉ FUNKCE
   const saveAndSet = (newList) => {
     setWatchlist(newList);
@@ -63,6 +75,11 @@ function App() {
     const price = data ? Number(data.p) : 0;
     return sum + (price * Number(item.shares)) || 0;
   }, 0);
+    const chart = watchlist.map((item, index) => {
+    const itemValue = (prices[item.symbol]?.p || 0) * item.shares;
+    const percentage = celkovePortfolio > 0 ? (itemValue / celkovePortfolio) * 100 : 0;
+    return { symbol: item.symbol, percentage, color: COLORS[index % COLORS.length] };
+  }).filter(item => item.percentage > 0);
 
   const addToWatchlist = async () => {
     const cleanQuery = searchQuery.toUpperCase().trim();
@@ -108,21 +125,22 @@ function App() {
     <div className="min-h-screen bg-[#0f172a] text-slate-200 p-6 md:p-12 font-sans">
       <header className="max-w-6xl mx-auto mb-10 flex justify-between items-end">
         <div>
-          <h1 className="text-3xl font-bold text-white tracking-tight italic uppercase">FIKTIVNI BURZA</h1>
+          <h1 className="text-3xl font-bold text-white tracking-tight italic uppercase">Asset Management System</h1>
         </div>
         <div className="font-mono text-indigo-400 hidden sm:block bg-slate-800/50 px-4 py-2 rounded-lg border border-slate-700">
           {time.toLocaleTimeString("cs-CZ")}
         </div>
       </header>
-
+      {/*INPUT BOX*/}
       <section className="max-w-6xl mx-auto mb-8 flex gap-2 ">
         <section className="duration-300 flex-1 hover:scale-101">
         <input 
           type="text" 
+          ref = {searchInputRef}
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && addToWatchlist()}
-          placeholder="Hledej symbol (TSLA, NVDA...)"
+          placeholder="Hledej symbol (TSLA, NVDA...)/"
           className="bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 w-full text-white focus:border-indigo-500 outline-none transition-all"
         />
         </section>
@@ -134,13 +152,41 @@ function App() {
       <main className="max-w-6xl mx-auto grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2">
         
         {/* DASHBOARD - CELKOVÉ PENÍZE */}
-        <div className="bg-gradient-to-br from-indigo-800 to-red-400 rounded-3xl shadow-2xl shadow-indigo-500/20 flex flex-col justify-center text-center p-5 border border-white/10 min-h-[160px]">
-          <div className="text-[10px] font-bold mb-2 uppercase tracking-widest text-indigo-100 opacity-80">Aktuální hodnota portfolia</div>
-          <div className="text-2xl font-black text-white">
-            ${celkovePortfolio.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}
+        <div className="bg-gradient-to-br from-indigo-800 to-red-400 rounded-3xl shadow-2xl p-5 border border-white/10 min-h-[160px] flex flex-col justify-between">
+          <div>
+            <div className="text-[10px] font-bold mb-2 uppercase tracking-widest text-indigo-100 opacity-80 text-center">Aktuální hodnota portfolia</div>
+            <div className="text-3xl font-black text-white text-center">
+              ${celkovePortfolio.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}
+            </div>
           </div>
-          
+          <div className="mt-4">
+            <div className="flex h-2 w-full rounded-full overflow-hidden bg-black/20 shadow-inner">
+              {chart.map((data) => (
+                <div 
+                  key={data.symbol}
+                  style={{ 
+                    width: `${data.percentage}%`, 
+                    backgroundColor: data.color 
+                  }}
+                  className="h-full transition-all duration-1000 ease-out border-r border-black/10 last:border-0"
+                  title={`${data.symbol}: ${data.percentage.toFixed(1)}%`}
+                />
+              ))}
+            </div>
+            
+            {/* LEGENDA - malinké značky pod grafem */}
+            <div className="flex flex-wrap justify-center gap-2 mt-2">
+              {chart.map((data) => (
+                <div key={data.symbol} className="flex items-center gap-1">
+                  <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: data.color }} />
+                  <span className="text-[8px] font-bold text-white/70 uppercase">{data.symbol}</span>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
+
+
 
         {/* VEJCOMĚR */}
         <div className="bg-slate-800/50 border border-slate-700 p-6 rounded-3xl flex flex-col justify-between min-h-[160px]">
@@ -154,7 +200,8 @@ function App() {
         </div>
 
         {/* KARTY AKCIÍ */}
-        {watchlist.map(item => (
+        {watchlist.map(item => {
+          return (
           <StockCard 
             key={item.symbol} 
             symbol={item.symbol}
@@ -164,7 +211,8 @@ function App() {
             onUpdateShares={(val) => updateShares(item.symbol, val)}
             onDelete={() => removeFromWatchlist(item.symbol)}
           />
-        ))}
+        );
+        })}
 
         {watchlist.length > 0 && (
           <button onClick={() => {if(confirm('Smazat vše?')) saveAndSet([])}} className="col-span-full mt-10 text-slate-600 hover:text-red-500 text-xs transition-colors italic text-center uppercase tracking-widest pb-10">
