@@ -3,7 +3,7 @@ import { ChartNoAxesColumnIncreasing, ChartNoAxesColumnDecreasing, X, CirclePlus
 
 function StockCard({ symbol, shares, price, change, onUpdateShares, onDelete }) {
 
-  const totalValue = price ? (price * shares).toFixed(2) : '0.00'
+const totalValue = (Number(price || 0) * Number(shares || 0)).toFixed(2);
 
   return (
     <div className="relative bg-slate-800/80 border border-slate-700 p-6 rounded-2xl hover:border-slate-500 transition-all group shadow-xl">
@@ -33,6 +33,7 @@ function StockCard({ symbol, shares, price, change, onUpdateShares, onDelete }) 
           <div className="flex items-center gap-2">
             <button onClick={() => onUpdateShares(Math.max(0, shares - 1))} className="bg-slate-700 w-10 h-8 rounded-lg hover:bg-slate-600 text-white flex justify-center items-center"><CircleMinus size={20} /></button>
             <input 
+              onFocus = {(e) => e.target.select()}
               value={shares} 
               onChange={(e) => onUpdateShares(e.target.value)}
               className="bg-transparent text-center w-full text-white font-bold text-lg outline-none focus:text-indigo-400"
