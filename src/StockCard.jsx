@@ -1,9 +1,12 @@
 import React from "react"
 import { ChartNoAxesColumnIncreasing, ChartNoAxesColumnDecreasing, X, CirclePlus, CircleMinus } from 'lucide-react';
 
-function StockCard({ symbol, shares, price, change, onUpdateShares, onDelete }) {
+function StockCard({ symbol, shares, price, change, onUpdateShares, onDelete, buyPrice }) {
 
-const totalValue = (Number(price || 0) * Number(shares || 0)).toFixed(2);
+const currentVal = Number(price || 0) * Number(shares || 0);
+const investedVal = Number(buyPrice || price || 0) * Number(shares || 0);
+const cardProfit = currentVal - investedVal;
+const cardProfitPercent = investedVal > 0 ? (cardProfit / investedVal) * 100 : 0;
 
   return (
     <div className="relative bg-slate-800/80 border border-slate-700 p-6 rounded-2xl hover:border-slate-500 transition-all group shadow-xl">
@@ -23,7 +26,10 @@ const totalValue = (Number(price || 0) * Number(shares || 0)).toFixed(2);
         {/* HLAVNÍ HODNOTA */}
         <div>
           <p className="text-[10px] text-slate-500 uppercase font-bold tracking-widest">Market Value</p>
-          <p className="text-3xl font-bold text-white">${totalValue}</p>
+          <p className="text-3xl font-bold text-white">${currentVal.toFixed(2)}</p>
+          <p className={`text-[10px] font-bold ${cardProfit >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+              {cardProfit !==0 && `${cardProfit >= 0 ? 'Profit' : 'Loss'}: ${Math.abs(cardProfit).toFixed(2)} (${Math.abs(cardProfitPercent).toFixed(2)}%)`}
+          </p>
           <p className="text-[10px] text-slate-600 mt-1">Cena za kus: ${price ? price.toFixed(2) : '...'}</p>
         </div>
 

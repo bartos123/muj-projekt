@@ -17,19 +17,31 @@ function App() {
     return saved ? JSON.parse(saved) : []
   })
  
-  // 1. FUNKCE PRO STAŽENÍ JEDNÉ CENY (Ta nejdůležitější věc)
-  const fetchSinglePrice = async (symbol) => {
+  const handleStock = async (symbol, {add = false} = {}) => {
     try {
       const res = await fetch(`https://finnhub.io/api/v1/quote?symbol=${symbol}&token=${API_KEY}`);
       const data = await res.json();
-      if (data.c) {
-        // Tady je ten trik: "prev => ({...prev, ...})" zajistí, že staré ceny nezmizí!
-        setPrices(prev => ({
-          ...prev,
-          [symbol]: { p: data.c, d: data.dp }
-        }));
+
+      if (data.c === 0) {
+        alert('Neplatný symbol, zkus to znovu.')
+        return null;
       }
-    } catch (err) {
+      setPrices(prev => ({ ...prev, [symbol]: { p: data.c, d: data.dp } }));
+      
+      if (add) {
+        symbol = symbol.toUpperCase();
+        if (!watchlist.some(item => item.symbol === symbol)) {
+          const newList = [{ symbol, shares: 1, buyPrice: data.c }, ...watchlist];
+          saveAndSet(newList);
+        } else {
+          alert('Již v seznamu.')
+        }
+        setSearchQuery('');
+      }
+      return data;
+    } catch (error) {
+      if (add) alert('Chyba načítání dat');
+      return null;
     }
   };
 
@@ -37,8 +49,19 @@ function App() {
   // 2. FUNKCE PRO REFRESH VŠEHO
   const refreshAllPrices = () => {
     watchlist.forEach(item => {
-      fetchSinglePrice(item.symbol);
+      handleStock(item.symbol);
     });
+  };
+  const isMarketOpen = () => {
+    const now = new Date();
+    const day = now.getDay();
+    const hours = now.getHours();
+    const minutes = now.getMinutes();
+  
+  if (day < 1 || day > 5) return false; // víkend
+  if (hours < 15 || (hours === 15 && minutes < 30)) return false; // před otevřením
+  if (hours > 22 || (hours === 22 && minutes > 0)) return false; // po zavření
+  return true;
   };
 
   // 3. INTERVALY (Hodiny a automatický refresh každou minutu)
@@ -53,7 +76,7 @@ function App() {
       clearInterval(clockTimer);
       clearInterval(refreshTimer);
     };
-  }, [watchlist.length]); // Spustí se znovu jen když přidáš/smažeš akcii
+  }, [watchlist.length]);
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (e.key === 'Enter' && document.activeElement.tagName !== 'INPUT') {
@@ -70,56 +93,80 @@ function App() {
     localStorage.setItem('watchlist', JSON.stringify(newList));
   }
 
-  const celkovePortfolio = watchlist.reduce((sum, item) => {
-    const data = prices[item.symbol];
-    const price = data ? Number(data.p) : 0;
-    return sum + (price * Number(item.shares)) || 0;
-  }, 0);
-    const chart = watchlist.map((item, index) => {
-    const itemValue = (prices[item.symbol]?.p || 0) * item.shares;
-    const percentage = celkovePortfolio > 0 ? (itemValue / celkovePortfolio) * 100 : 0;
-    return { symbol: item.symbol, percentage, color: COLORS[index % COLORS.length] };
-  }).filter(item => item.percentage > 0);
-
-  const addToWatchlist = async () => {
-    const cleanQuery = searchQuery.toUpperCase().trim();
-    if (!cleanQuery) return;
-    if (watchlist.find(s => s.symbol === cleanQuery)) {
-      alert("Tuhle už máš.");
-      return;
-    }
+  const stats = watchlist.reduce((acc, item) => {
+    const currentPrice = prices[item.symbol];
+    const buyPrice = item.buyPrice || currentPrice?.p || 0;
     
-    try {
-      const res =  await fetch(`https://finnhub.io/api/v1/quote?symbol=${cleanQuery}&token=${API_KEY}`);
-      const data = await res.json();
+    const currentValue = (currentPrice?.p ||0) * Number(item.shares || 0);
+    const investedValue = buyPrice * Number(item.shares || 0);
+    return {
+      total: acc.total + currentValue,
+      invested: acc.invested + investedValue
+    }
+   }, { total: 0, invested: 0 });
+    
 
-      if (data.c === 0 || data.d === null) {
-        alert("Symbol neexistuje.");
-        setSearchQuery('');
-        return;
+  const celkovyZisk = stats.total - stats.invested;
+  const ziskProcento = stats.invested > 0 ? (celkovyZisk / stats.invested) * 100 : 0;
+
+  const chart = watchlist.map((item, index) => {
+    const ItemValue = (prices[item.symbol]?.p || 0) * Number(item.shares || 0);
+    const percentage = stats.total > 0 ? (ItemValue / stats.total) * 100 : 0;
+    return {
+      symbol: item.symbol,
+      percentage, color: COLORS[index % COLORS.length]
+    };
+  });
+
+const updateShares = (symbol, newAmount) => {
+  const currentPrice = prices[symbol]?.p || 0;
+  
+  const newList = watchlist.map(item => {
+    if (item.symbol === symbol) {
+      const oldAmount = Number(item.shares);
+      const newAmountNum = Number(newAmount);
+
+      // Pokud dokupujeme (zvyšujeme počet kusů)
+      if (newAmountNum > oldAmount && currentPrice > 0) {
+        const addedShares = newAmountNum - oldAmount;
+        
+        // Vzorec pro vážený průměr:
+        // ((staré kusy * stará cena) + (nové kusy * aktuální cena)) / celkový počet kusů
+        const newBuyPrice = (
+          (oldAmount * (item.buyPrice || currentPrice)) + 
+          (addedShares * currentPrice)
+        ) / newAmountNum;
+
+        return { ...item, shares: newAmountNum, buyPrice: newBuyPrice };
       }
 
-      const newList = [{ symbol: cleanQuery, shares: 1 }, ...watchlist];
-      // Nejdřív uložíme cenu, pak teprve přidáme do seznamu
-      setPrices(prev => ({ ...prev, [cleanQuery]: { p: data.c, d: data.dp } }));
-      saveAndSet(newList);
-      setSearchQuery('');
-    } catch (err) {
-      alert("Chyba spojení s burzou.");
+      // Pokud prodáváme nebo snižujeme počet, nákupní cena za kus zůstává stejná
+      return { ...item, shares: newAmountNum };
     }
-  };
+    return item;
+  });
 
-  const updateShares = (symbol, newAmount) => {
-    const newList = watchlist.map(item => 
-      item.symbol === symbol ? { ...item, shares: Number(newAmount) } : item
-    );
-    saveAndSet(newList);
-  }
+  saveAndSet(newList);
+};
 
   const removeFromWatchlist = (symbolToRemove) => {
     const newList = watchlist.filter(s => s.symbol !== symbolToRemove);
     saveAndSet(newList);
   };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
   return (
     <div className="min-h-screen bg-[#0f172a] text-slate-200 p-6 md:p-12 font-sans">
@@ -127,8 +174,11 @@ function App() {
         <div>
           <h1 className="text-3xl font-bold text-white tracking-tight italic uppercase">Asset Management System</h1>
         </div>
-        <div className="font-mono text-indigo-400 hidden sm:block bg-slate-800/50 px-4 py-2 rounded-lg border border-slate-700">
-          {time.toLocaleTimeString("cs-CZ")}
+
+        <div className="font-mono text-white hidden sm:flex bg-slate-800/50 px-4 py-2 rounded-lg border border-slate-700 items-center space-x-3">
+          <div>{time.toLocaleTimeString("cs-CZ")}</div>
+          <div className="w-px h-6 bg-white/50"></div> 
+          <div>{isMarketOpen() ? 'Trh otevřen' : 'Trh zavřen'}</div>
         </div>
       </header>
       {/*INPUT BOX*/}
@@ -139,12 +189,12 @@ function App() {
           ref = {searchInputRef}
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          onKeyDown={(e) => e.key === 'Enter' && addToWatchlist()}
+          onKeyDown={(e) => e.key === 'Enter' && handleStock(searchQuery.toUpperCase(), {add: true})}
           placeholder="Hledej symbol (TSLA, NVDA...)/"
           className="bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 w-full text-white focus:border-indigo-500 outline-none transition-all"
         />
         </section>
-        <button onClick={addToWatchlist} className="bg-indigo-600 px-8 rounded-xl font-bold hover:bg-indigo-500 transition-all shadow-lg shadow-indigo-500/20 active:scale-95">
+        <button onClick={() => handleStock(searchQuery.toUpperCase(), {add: true})} className="bg-indigo-600 px-8 rounded-xl font-bold hover:bg-indigo-500 transition-all shadow-lg shadow-indigo-500/20 active:scale-95">
           Přidat
         </button>
       </section>
@@ -156,8 +206,12 @@ function App() {
           <div>
             <div className="text-[10px] font-bold mb-2 uppercase tracking-widest text-indigo-100 opacity-80 text-center">Aktuální hodnota portfolia</div>
             <div className="text-3xl font-black text-white text-center">
-              ${celkovePortfolio.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}
+              ${stats.total.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}
             </div>
+            <div className={`text-center font-bold text-xs mt-1 ${celkovyZisk >= 0 ? 'text-emerald-300' : 'text-red-200'}`}>
+              {celkovyZisk !== 0 && `${celkovyZisk > 0 ? '▲' : '▼'} ${Math.abs(celkovyZisk).toFixed(2)} (${ziskProcento.toFixed(2)}%)`}           
+            </div>
+ 
           </div>
           <div className="mt-4">
             <div className="flex h-2 w-full rounded-full overflow-hidden bg-black/20 shadow-inner">
@@ -205,6 +259,7 @@ function App() {
           <StockCard 
             key={item.symbol} 
             symbol={item.symbol}
+            buyPrice={item.buyPrice}
             shares={item.shares}
             price={prices[item.symbol]?.p}
             change={prices[item.symbol]?.d}
