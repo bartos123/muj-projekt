@@ -394,9 +394,14 @@ const updateShares = (symbol, newAmount) => {
           })
         )}
         {watchlist.length > 0 && (
-          <button onClick={() => {if(confirm('Smazat vše?')) saveAndSet([])}} className="col-span-full mt-10 text-slate-600 hover:text-red-500 text-xs transition-colors italic text-center uppercase tracking-widest pb-10">
-            — Provést kompletní destrukci portfolia —
-          </button>
+        <button 
+          onClick={() => {if(confirm('Smazat vše?')) saveAndSet([])}} 
+          className="col-span-full mt-10 text-center pb-10"
+        >
+          <span className="text-slate-600 text-md italic uppercase tracking-widest transition-colors hover:text-red-500">
+            — Provést kompletní destrukci portfolia —
+          </span>
+        </button>
         )}
         <section className="col-span-full mt-12 pt-8 border-t border-slate-800">
           <h2 className="text-xl font-bold text-white mb-6 uppercase tracking-widest italic">Zprávy</h2>
