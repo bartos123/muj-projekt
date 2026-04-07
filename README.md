@@ -19,7 +19,7 @@ Moderní finanční dashboard v Reactu pro sledování akciového portfolia v re
 - **Deployment** Vercel
 <!--- **Filozofie** inspirace Nietzscheho provazochodcem-->
 
-## Co všechno jsem se naučil
+## Co všechno jsem se naučil?
 Tento projekt mi posloužil jako nauka o Reactu a práci s ním spojenou.
 - Práce s asynchronními daty a handling API rate-limitingu (Error 429) - v případě obou API
 - Správa stavu portfolia pomocí `useState` a `useEffect`, ukládání do localStorage
