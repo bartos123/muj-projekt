@@ -206,16 +206,29 @@ const fetchHistory = async (symbol) => {
               className="bg-slate-800/80 border-2 border-slate-700 md:border-r-0 rounded-t-2xl md:rounded-l-2xl md:rounded-tr-none px-14 h-16 w-full text-white text-lg focus:border-indigo-500 focus:bg-slate-800 outline-none transition-all placeholder:text-slate-600 shadow-inner"
             />
 
-            {/* NAŠEPTÁVAČ - Poladěný, aby lícoval pod inputem */}
             {suggestions.length > 0 && (
               <div className="absolute top-full left-0 right-0 z-[100] bg-slate-900/95 border-2 border-t-0 border-slate-700 rounded-b-2xl shadow-2xl overflow-hidden backdrop-blur-xl">
                 {suggestions.map(s => (
-                  <button key={s.symbol} onClick={() => onAddStock(s.symbol)} className="w-full px-6 py-4 hover:bg-indigo-600/20 flex justify-between items-center border-b border-slate-800 last:border-0 transition-all group">
-                    <div className="flex flex-col">
-                      <span className="font-black text-white text-lg">{s.symbol.split(':')[0]}</span>
-                      <span className="text-[10px] text-slate-500 font-bold uppercase">{s.description}</span>
+                  <button 
+                    key={s.symbol} 
+                    onClick={() => onAddStock(s.symbol)} 
+                    // PŘIDÁNO: cursor-pointer
+                    className="w-full pl-14 pr-6 py-4 hover:bg-indigo-600/20 flex justify-between items-center border-b border-slate-800 last:border-0 transition-all group text-left cursor-pointer"
+                  >
+                    <div className="flex flex-col items-start">
+                      <span className="font-black text-white text-lg leading-tight">
+                        {s.symbol.split(':')[0]}
+                      </span>
+                      {/* ODEBRÁNO opacity-0: Popis chceme vidět pořád, aby seznam nebyl prázdný */}
+                      <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider leading-tight">
+                        {s.description}
+                      </span>
                     </div>
-                    <span className="text-indigo-500 font-black text-xs opacity-0 group-hover:opacity-100">+ ADD</span>
+                    
+                    {/* TADY: Toto se ukáže JEN při hoveru na tento konkrétní button */}
+                    <span className="text-indigo-400 font-black text-xs opacity-0 group-hover:opacity-100 transition-all whitespace-nowrap ml-4 translate-x-2 group-hover:translate-x-0">
+                      + ADD
+                    </span>
                   </button>
                 ))}
               </div>
