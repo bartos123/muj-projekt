@@ -13,16 +13,14 @@ const chartData = historyData ? historyData.map((val, i) => {
   
   return {
     val,
-    // Tohle bude náš unikátní klíč pro každý bod
     fullDate: d.toLocaleDateString('cs-CZ', { day: 'numeric', month: 'short' }),
-    // Tohle chceme vidět na ose (jen začátek a konec)
     xAxisLabel: i === 0 ? 'Před měsícem' : i === historyData.length - 1 ? 'Dnes' : ''
   };
 }) : [];
   return (
     <div className="relative bg-slate-800/80 border border-slate-700 p-6 rounded-2xl hover:border-slate-500 transition-all group shadow-xl">
       {/* Smazání */}
-      <button onClick={onDelete} className="absolute top-4 right-4 text-slate-600 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all">
+      <button onClick={onDelete} className="absolute top-4 right-4 text-slate-600 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 hover:text-red-500 transition-all">
         <X size={25}/>
       </button>
 
@@ -35,6 +33,7 @@ const chartData = historyData ? historyData.map((val, i) => {
       
 {/* SPARKLINE GRAF */}
 <div className="h-24 w-full mb-6 relative group/chart" style ={{minWidth: 0}}>
+{historyData && historyData.length > 0 ? (
   <ResponsiveContainer width="100%" height="100%">
     <LineChart data={chartData}>
       <YAxis hide domain={['auto', 'auto']} />
@@ -47,7 +46,6 @@ const chartData = historyData ? historyData.map((val, i) => {
           fontSize: '12px'
         }}
         labelStyle={{ color: '#94a3b8', marginBottom: '4px', fontWeight: 'bold' }}
-        // Tooltip teď automaticky vezme 'fullDate' jako label, protože je to dataKey v XAxis
         formatter={(value) => [`$${value.toFixed(2)}`, 'Cena']}
       />
 
@@ -57,7 +55,6 @@ const chartData = historyData ? historyData.map((val, i) => {
         tickLine={false}
         axisLine={false}
         tick={{ fill: '#64748b', fontSize: 10, fontWeight: 'bold' }}
-        // Tohle posune graf od okrajů, aby se tam nápisy vešly:
         padding={{ left: 40, right: 20 }} 
         interval={0}
         tickFormatter={(value, index) => {
@@ -76,7 +73,10 @@ const chartData = historyData ? historyData.map((val, i) => {
         activeDot={{ r: 6, strokeWidth: 0 }}
       />
     </LineChart>
-  </ResponsiveContainer>
+  </ResponsiveContainer> ) : (
+    <div className="h-24 w-full mb-6 flex items-center justify-center">
+      <p className="text-sm text-slate-500">Žádná data z minulosti</p>
+    </div>)}
 </div>
       <div className="space-y-4">
         {/* HLAVNÍ HODNOTA */}

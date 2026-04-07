@@ -181,9 +181,9 @@ const fetchHistory = async (symbol) => {
         </div>
 
         <div className="flex items-center self-start lg:self-center font-mono text-lg sm:text-xl text-white bg-slate-800/50 px-6 py-3 rounded-lg border border-slate-700 space-x-4">
-          <div flex flex-col>{time.toLocaleTimeString("cs-CZ")}</div>
+          <div className="flex flex-col">{time.toLocaleTimeString("cs-CZ")}</div>
           <div className="w-px h-6 bg-white/50"></div> 
-          <div flex items-center>{isMarketOpen() ? 'Trh otevřen' : 'Trh zavřen'}</div>
+          <div className="flex items-center">{isMarketOpen() ? 'Trh otevřen' : 'Trh zavřen'}</div>
         </div>
       </header>
 
@@ -212,21 +212,18 @@ const fetchHistory = async (symbol) => {
                   <button 
                     key={s.symbol} 
                     onClick={() => onAddStock(s.symbol)} 
-                    // PŘIDÁNO: cursor-pointer
-                    className="w-full pl-14 pr-6 py-4 hover:bg-indigo-600/20 flex justify-between items-center border-b border-slate-800 last:border-0 transition-all group text-left cursor-pointer"
+                    className="w-full pl-14 pr-6 py-4 hover:bg-indigo-600/20 flex justify-between items-center border-b border-slate-800 last:border-0 transition-all group/item text-left cursor-pointer"
                   >
                     <div className="flex flex-col items-start">
                       <span className="font-black text-white text-lg leading-tight">
                         {s.symbol.split(':')[0]}
                       </span>
-                      {/* ODEBRÁNO opacity-0: Popis chceme vidět pořád, aby seznam nebyl prázdný */}
                       <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider leading-tight">
                         {s.description}
                       </span>
                     </div>
                     
-                    {/* TADY: Toto se ukáže JEN při hoveru na tento konkrétní button */}
-                    <span className="text-indigo-400 font-black text-xs opacity-0 group-hover:opacity-100 transition-all whitespace-nowrap ml-4 translate-x-2 group-hover:translate-x-0">
+                    <span className="text-indigo-400 font-black text-xs opacity-0 group-hover:opacity-100 transition-all whitespace-nowrap ml-4 translate-x-2 group-hover/item:translate-x-0">
                       + ADD
                     </span>
                   </button>
