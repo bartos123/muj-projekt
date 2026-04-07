@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react'
 import StockCard from './StockCard.jsx'
 
-
 const COLORS = ['#6366f1', '#ec4899', '#8b5cf6', '#22c55e', '#f59e0b', '#ef4444', '#06b6d4'];
 function App() {
   const API_KEY = import.meta.env.VITE_FINNHUB_API_KEY;
@@ -19,7 +18,8 @@ function App() {
   localStorage.setItem('last_prices', JSON.stringify(prices));
   }, [prices]);
   const searchInputRef = useRef(null);
-  const [news, setNews] = useState([])
+  const [history, setHistory] = useState({});
+  const [news, setNews] = useState([]);
   const searchContainerRef = useRef(null); // Ref pro celé vyhledávání
 
   const [watchlist, setWatchlist] = useState(() => {
@@ -29,7 +29,6 @@ function App() {
   })
  
   const fetchNews = async () => {
-    // Pokud je watchlist prázdný, stáhni aspoň obecný Business
     if (watchlist.length === 0) {
       const res = await fetch(`https://finnhub.io/api/v1/news?category=business&token=${API_KEY}`);
       const data = await res.json();
@@ -39,7 +38,7 @@ function App() {
 
     const symbols = watchlist.slice(0, 3).map(i => i.symbol);
     const to = new Date().toISOString().split('T')[0];
-    const from = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+    const from = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
 
     try {
       const requests = symbols.map(s => 
@@ -48,6 +47,7 @@ function App() {
       );
       const results = await Promise.all(requests);
       const combined = results.flat()
+        .filter((v, i, a) => a.findIndex(t => t.id === v.id) === i)
         .sort((a, b) => b.datetime - a.datetime)
         .slice(0, 6);
       setNews(combined);
@@ -81,6 +81,29 @@ function App() {
       return null;
     }
   };
+const fetchHistory = async (symbol) => {
+  //if (history[symbol]) return;
+
+  const apiKey = import.meta.env.VITE_POLYGON_API_KEY;
+  const to = new Date().toISOString().split('T')[0];
+  // Změna ze 7 na 30 dní
+  const from = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+
+  try {
+    const res = await fetch(
+      `https://api.polygon.io/v2/aggs/ticker/${symbol}/range/1/day/${from}/${to}?adjusted=true&sort=asc&apiKey=${apiKey}`
+    );
+    const data = await res.json();
+    
+    if (data.results) {
+      // Teď budeme mít v poli cca 20-22 svíček (protože víkendy)
+      const prices = data.results.map(day => day.c);
+      setHistory(prev => ({ ...prev, [symbol]: prices }));
+    }
+  } catch (err) { 
+    console.error("Polygon historie selhala."); 
+  }
+};
   const searchSymbols = async (query) => {
     if (query.length < 2) {
       setSuggestions([]);
@@ -102,11 +125,12 @@ function App() {
   };
 
   // 2. FUNKCE PRO REFRESH VŠEHO
-  const refreshAllPrices = () => {
-    watchlist.forEach(item => {
-      handleStock(item.symbol);
-    });
-  };
+  const refreshAllPrices = () => {
+    watchlist.forEach(item => {
+      handleStock(item.symbol);
+      fetchHistory(item.symbol);
+    });
+  };
   const isMarketOpen = () => {
     const now = new Date();
     const day = now.getDay();
@@ -272,7 +296,7 @@ const updateShares = (symbol, newAmount) => {
               className="bg-slate-800 border border-slate-700 rounded-xl px-5 py-5 w-full text-white text-xl focus:border-indigo-500 outline-none transition-all shadow-inner"
             />
 
-            {/* NAŠEPTÁVAČ - Teď už neuteče při pohybu myši */}
+            {/* NAŠEPTÁVAČ*/}
             {suggestions.length > 0 && (
               <div className="absolute top-[110%] left-0 right-0 z-[100] bg-slate-900 border border-slate-700 rounded-2xl shadow-[0_25px_60px_rgba(0,0,0,0.8)] overflow-hidden backdrop-blur-xl">
                 {suggestions.map(s => (
@@ -283,7 +307,7 @@ const updateShares = (symbol, newAmount) => {
                       setSuggestions([]);
                       setSearchQuery('');
                     }}
-                    className="w-full px-6 py-5 hover:bg-indigo-600/30 flex justify-between items-center transition-all border-b border-slate-800 last:border-0 text-left group"
+                    className="w-full px-6 py-5 hover:bg-indigo-600/30 flex justify-between items-center transition-all border-b border-slate-800 last:border-0 text-left group cursor-pointer"
                   >
                     <div className="flex flex-col">
                       <span className="font-black text-white text-2xl group-hover:text-indigo-400 transition-colors">
@@ -310,7 +334,7 @@ const updateShares = (symbol, newAmount) => {
               handleStock(searchQuery.toUpperCase(), {add: true});
               setSuggestions([]);
             }} 
-            className="bg-indigo-600 px-12 rounded-xl font-black text-white text-lg hover:bg-indigo-500 transition-all active:scale-95 shadow-xl shadow-indigo-500/20 uppercase italic"
+            className="bg-indigo-600 cursor-pointer px-12 rounded-xl font-black text-white text-lg hover:bg-indigo-500 transition-all active:scale-95 shadow-xl shadow-indigo-500/20 uppercase italic"
           >
             Přidat
           </button>
@@ -389,20 +413,29 @@ const updateShares = (symbol, newAmount) => {
                 change={prices[item.symbol]?.d}
                 onUpdateShares={(val) => updateShares(item.symbol, val)}
                 onDelete={() => removeFromWatchlist(item.symbol)}
+                historyData={history[item.symbol]} 
               />
             )
           })
         )}
+
+
+
+
         {watchlist.length > 0 && (
+        <div className="col-span-full mt-12 mb-10 flex justify-center">
         <button 
           onClick={() => {if(confirm('Smazat vše?')) saveAndSet([])}} 
-          className="col-span-full mt-10 text-center pb-10"
+          className="group flex items-center gap-2 px-6 py-3 rounded-xl border border-slate-800 hover:border-red-500/50 transition-all"
         >
-          <span className="text-slate-600 text-md italic uppercase tracking-widest transition-colors hover:text-red-500">
+          <span className="text-slate-600 group-hover:text-red-400 text-xs font-black uppercase tracking-[0.2em] transition-colors italic">
             — Provést kompletní destrukci portfolia —
           </span>
         </button>
+        </div>
         )}
+
+
         <section className="col-span-full mt-12 pt-8 border-t border-slate-800">
           <h2 className="text-xl font-bold text-white mb-6 uppercase tracking-widest italic">Zprávy</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">

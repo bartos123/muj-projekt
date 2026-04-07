@@ -1,13 +1,24 @@
 import React from "react"
 import { ChartNoAxesColumnIncreasing, ChartNoAxesColumnDecreasing, X, CirclePlus, CircleMinus } from 'lucide-react';
-
-function StockCard({ symbol, shares, price, change, onUpdateShares, onDelete, buyPrice }) {
+import { LineChart, Line, ResponsiveContainer, YAxis, XAxis, Tooltip } from 'recharts';
+function StockCard({ symbol, shares, price, change, onUpdateShares, onDelete, buyPrice, historyData }) {
 
 const currentVal = Number(price || 0) * Number(shares || 0);
 const investedVal = Number(buyPrice || price || 0) * Number(shares || 0);
 const cardProfit = currentVal - investedVal;
 const cardProfitPercent = investedVal > 0 ? (cardProfit / investedVal) * 100 : 0;
-
+const chartData = historyData ? historyData.map((val, i) => {
+  const d = new Date();
+  d.setDate(d.getDate() - (historyData.length - 1 - i));
+  
+  return {
+    val,
+    // Tohle bude náš unikátní klíč pro každý bod
+    fullDate: d.toLocaleDateString('cs-CZ', { day: 'numeric', month: 'short' }),
+    // Tohle chceme vidět na ose (jen začátek a konec)
+    xAxisLabel: i === 0 ? 'Před měsícem' : i === historyData.length - 1 ? 'Dnes' : ''
+  };
+}) : [];
   return (
     <div className="relative bg-slate-800/80 border border-slate-700 p-6 rounded-2xl hover:border-slate-500 transition-all group shadow-xl">
       {/* Smazání */}
@@ -21,7 +32,52 @@ const cardProfitPercent = investedVal > 0 ? (cardProfit / investedVal) * 100 : 0
           {change >= 0 ? <ChartNoAxesColumnIncreasing size={16} /> : <ChartNoAxesColumnDecreasing size={16} />} {Math.abs(change || 0).toFixed(2)}%
         </div>
       </div>
+      
+{/* SPARKLINE GRAF */}
+<div className="h-24 w-full mb-6 relative group/chart" style ={{minWidth: 0}}>
+  <ResponsiveContainer width="100%" height="100%">
+    <LineChart data={chartData}>
+      <YAxis hide domain={['auto', 'auto']} />
+      
+      <Tooltip 
+        contentStyle={{ 
+          backgroundColor: '#1e293b', 
+          border: '1px solid #334155', 
+          borderRadius: '12px',
+          fontSize: '12px'
+        }}
+        labelStyle={{ color: '#94a3b8', marginBottom: '4px', fontWeight: 'bold' }}
+        // Tooltip teď automaticky vezme 'fullDate' jako label, protože je to dataKey v XAxis
+        formatter={(value) => [`$${value.toFixed(2)}`, 'Cena']}
+      />
 
+      <XAxis 
+        dataKey="fullDate" 
+        hide={false}
+        tickLine={false}
+        axisLine={false}
+        tick={{ fill: '#64748b', fontSize: 10, fontWeight: 'bold' }}
+        // Tohle posune graf od okrajů, aby se tam nápisy vešly:
+        padding={{ left: 40, right: 20 }} 
+        interval={0}
+        tickFormatter={(value, index) => {
+          if (index === 0) return 'Před měsícem';
+          if (index === chartData.length - 1) return 'Dnes';
+          return '';
+        }}
+      />
+
+      <Line 
+        type="monotone" 
+        dataKey="val" 
+        stroke={change >= 0 ? "#10b981" : "#ef4444"} 
+        strokeWidth={3} 
+        dot={false} 
+        activeDot={{ r: 6, strokeWidth: 0 }}
+      />
+    </LineChart>
+  </ResponsiveContainer>
+</div>
       <div className="space-y-4">
         {/* HLAVNÍ HODNOTA */}
         <div>
