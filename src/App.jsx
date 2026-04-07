@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { X } from 'lucide-react';
+import { X, Search } from 'lucide-react';
 import StockCard from './StockCard.jsx';
 import { usePortfolio } from './hooks/usePortfolio.js';
 import { useNews } from './hooks/useNews.js';
@@ -188,63 +188,48 @@ const fetchHistory = async (symbol) => {
       </header>
 
       {/*INPUT BOX*/}
-      <section 
-        ref={searchContainerRef} 
-        className="max-w-[1400px] mx-auto mb-10 relative"
-      > 
-        <div className="flex gap-3">
-          <div className="relative flex-1">
-            <input 
-              type="text" 
-              ref={searchInputRef}
-              value={searchQuery}
-              onFocus={() => searchQuery.length >= 2 && searchSymbols(searchQuery)} // Znovu ukáže výsledky při kliku do inputu
-              onChange={(e) => {
-                setSearchQuery(e.target.value);
-                searchSymbols(e.target.value);
-              }}
+      <section ref={searchContainerRef} className="max-w-[1400px] mx-auto mb-12 relative">
+        <div className="flex flex-col md:flex-row gap-0 group">
+          <div className="relative flex-1">
+            {/* IKONA LUPY */}
+            <div className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-indigo-400 transition-colors">
+              <Search size={20} />
+            </div>
+            
+            <input 
+              type="text" 
+              ref={searchInputRef}
+              value={searchQuery}
+              onChange={(e) => {setSearchQuery(e.target.value); searchSymbols(e.target.value);}}
               onKeyDown={(e) => e.key === 'Enter' && onAddStock(searchQuery)}
-              placeholder="Hledej symbol (TSLA, BTC, NVDA...)"
-              className="bg-slate-800 border border-slate-700 rounded-xl px-4 py-4 md:py-5 w-full text-white text-xl focus:border-indigo-500 outline-none transition-all shadow-inner"
-            />
+              placeholder="Hledej symbol (TSLA, BTC, NVDA...)"
+              className="bg-slate-800/80 border-2 border-slate-700 md:border-r-0 rounded-t-2xl md:rounded-l-2xl md:rounded-tr-none px-14 h-16 w-full text-white text-lg focus:border-indigo-500 focus:bg-slate-800 outline-none transition-all placeholder:text-slate-600 shadow-inner"
+            />
 
-            {/* NAŠEPTÁVAČ*/}
-            {suggestions.length > 0 && (
-              <div className="absolute top-[110%] left-0 right-0 z-[100] bg-slate-900 border border-slate-700 rounded-2xl shadow-[0_25px_60px_rgba(0,0,0,0.8)] overflow-hidden backdrop-blur-xl">
-                {suggestions.map(s => (
-                  <button 
-                    key={s.symbol}
-                    onClick={() => onAddStock(s.symbol)}
-                    className="w-full px-6 py-5 hover:bg-indigo-600/30 flex justify-between items-center transition-all border-b border-slate-800 last:border-0 text-left group cursor-pointer"
-                  >
-                    <div className="flex flex-col">
-                      <span className="font-black text-white text-2xl group-hover:text-indigo-400 transition-colors">
-                        {s.symbol.includes(':') ? s.symbol.split(':')[1] : s.symbol}
-                      </span>
-                      <span className="text-xs text-slate-500 font-bold truncate max-w-[400px] uppercase tracking-wider">{s.description}</span>
-                    </div>
-                    <div className="flex flex-col items-end gap-2">
-                      <span className="text-[10px] font-black text-slate-400 bg-slate-800 px-3 py-1 rounded-lg uppercase">
-                        {s.type || 'Asset'}
-                      </span>
-                      <span className="text-indigo-500 text-xs font-black opacity-0 group-hover:opacity-100 transition-all translate-x-2 group-hover:translate-x-0">
-                        + PŘIDAT
-                      </span>
-                    </div>
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
+            {/* NAŠEPTÁVAČ - Poladěný, aby lícoval pod inputem */}
+            {suggestions.length > 0 && (
+              <div className="absolute top-full left-0 right-0 z-[100] bg-slate-900/95 border-2 border-t-0 border-slate-700 rounded-b-2xl shadow-2xl overflow-hidden backdrop-blur-xl">
+                {suggestions.map(s => (
+                  <button key={s.symbol} onClick={() => onAddStock(s.symbol)} className="w-full px-6 py-4 hover:bg-indigo-600/20 flex justify-between items-center border-b border-slate-800 last:border-0 transition-all group">
+                    <div className="flex flex-col">
+                      <span className="font-black text-white text-lg">{s.symbol.split(':')[0]}</span>
+                      <span className="text-[10px] text-slate-500 font-bold uppercase">{s.description}</span>
+                    </div>
+                    <span className="text-indigo-500 font-black text-xs opacity-0 group-hover:opacity-100">+ ADD</span>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
 
-          <button 
-          onClick={() => onAddStock(searchQuery)}
-            className="bg-indigo-600 cursor-pointer px-12 rounded-xl font-black text-white text-lg hover:bg-indigo-500 transition-all active:scale-95 shadow-xl shadow-indigo-500/20 uppercase italic"
-          >
-            Přidat
-          </button>
-        </div>
-      </section>
+          <button 
+            onClick={() => onAddStock(searchQuery)}
+            className="bg-indigo-600 h-16 px-10 rounded-b-2xl md:rounded-r-2xl md:rounded-bl-none font-black text-white hover:bg-indigo-500 transition-all active:scale-95 shadow-lg shadow-indigo-500/20 uppercase italic tracking-widest border-2 border-indigo-600"
+          >
+            PŘIDAT
+          </button>
+        </div>
+      </section>
 
       <main className="max-w-[1400px] mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
         
