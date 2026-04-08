@@ -1,7 +1,8 @@
 import { useState, useCallback } from 'react';
+import { StockItem, NewsItem } from '../types/portfolio';
 
-export function useNews(apiKey, watchlist) {
-  const [news, setNews] = useState([]);
+export function useNews(apiKey: string, watchlist: StockItem[]) {
+  const [news, setNews] = useState<NewsItem[]>([]);
     
   const fetchNews = useCallback (async () => {
     if (!watchlist || watchlist.length === 0) {

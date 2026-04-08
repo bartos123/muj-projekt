@@ -1,12 +1,16 @@
-import React from "react"
 import { ChartNoAxesColumnIncreasing, ChartNoAxesColumnDecreasing, X, CirclePlus, CircleMinus } from 'lucide-react';
 import { LineChart, Line, ResponsiveContainer, YAxis, XAxis, Tooltip } from 'recharts';
-function StockCard({ symbol, shares, price, change, onUpdateShares, onDelete, buyPrice, historyData }) {
+import { StockCardProps } from '../src/types/portfolio';
 
-const currentVal = Number(price || 0) * Number(shares || 0);
-const investedVal = Number(buyPrice || price || 0) * Number(shares || 0);
+
+function StockCard({ symbol, shares, price, change = 0, onUpdateShares, onDelete, buyPrice, historyData }: StockCardProps) {
+
+const currentVal = (price || 0) * (shares || 0);
+const investedVal = (buyPrice || price || 0) * (shares || 0);
 const cardProfit = currentVal - investedVal;
 const cardProfitPercent = investedVal > 0 ? (cardProfit / investedVal) * 100 : 0;
+
+
 const chartData = historyData ? historyData.map((val, i) => {
   const d = new Date();
   d.setDate(d.getDate() - (historyData.length - 1 - i));
@@ -26,8 +30,8 @@ const chartData = historyData ? historyData.map((val, i) => {
 
       <div className="flex items-start justify-between ">
         <h3 className="text-2xl font-black text-white tracking-tighter">{symbol}</h3>
-        <div className={`text-xs font-bold px-2 py-1 rounded ${change >= 0 ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400'}`}>
-          {change >= 0 ? <ChartNoAxesColumnIncreasing size={16} /> : <ChartNoAxesColumnDecreasing size={16} />} {Math.abs(change || 0).toFixed(2)}%
+        <div className={`text-xs font-bold px-2 py-1 rounded ${(change || 0) >= 0 ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400'}`}>
+          {(change || 0) >= 0 ? <ChartNoAxesColumnIncreasing size={16} /> : <ChartNoAxesColumnDecreasing size={16} />} {Math.abs(change || 0).toFixed(2)}%
         </div>
       </div>
       
@@ -46,7 +50,9 @@ const chartData = historyData ? historyData.map((val, i) => {
           fontSize: '12px'
         }}
         labelStyle={{ color: '#94a3b8', marginBottom: '4px', fontWeight: 'bold' }}
-        formatter={(value) => [`$${value.toFixed(2)}`, 'Cena']}
+        formatter={(value : any) => {
+          const numValue = Number(value) || 0;
+           return [`$${numValue.toFixed(2)}`, 'Cena']}}
       />
 
       <XAxis 
@@ -57,7 +63,7 @@ const chartData = historyData ? historyData.map((val, i) => {
         tick={{ fill: '#64748b', fontSize: 10, fontWeight: 'bold' }}
         padding={{ left: 40, right: 20 }} 
         interval={0}
-        tickFormatter={(value, index) => {
+        tickFormatter={(, index) => {
           if (index === 0) return 'Před měsícem';
           if (index === chartData.length - 1) return 'Dnes';
           return '';
@@ -67,7 +73,7 @@ const chartData = historyData ? historyData.map((val, i) => {
       <Line 
         type="monotone" 
         dataKey="val" 
-        stroke={change >= 0 ? "#10b981" : "#ef4444"} 
+        stroke={(change || 0) >= 0 ? "#10b981" : "#ef4444"} 
         strokeWidth={3} 
         dot={false} 
         activeDot={{ r: 6, strokeWidth: 0 }}
@@ -75,7 +81,7 @@ const chartData = historyData ? historyData.map((val, i) => {
     </LineChart>
   </ResponsiveContainer> ) : (
     <div className="h-24 w-full mb-6 flex items-center justify-center">
-      <p className="text-sm text-slate-500">Žádná data z minulosti</p>
+      <p className="text-sm text-slate-500">Načítání dat</p>
     </div>)}
 </div>
       <div className="space-y-4">

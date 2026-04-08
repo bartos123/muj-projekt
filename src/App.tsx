@@ -1,12 +1,15 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { X, Search } from 'lucide-react';
 import StockCard from './StockCard.jsx';
-import { usePortfolio } from './hooks/usePortfolio.js';
-import { useNews } from './hooks/useNews.js';
+import { usePortfolio } from './hooks/usePortfolio.ts';
+import { useNews } from './hooks/useNews.ts';
+
+
+
 
 const COLORS = ['#6366f1', '#ec4899', '#8b5cf6', '#22c55e', '#f59e0b', '#ef4444', '#06b6d4'];
 function App() {
-  const API_KEY = import.meta.env.VITE_FINNHUB_API_KEY;
+  const API_KEY = (import.meta as any).env.VITE_FINNHUB_API_KEY;
 
   const { 
       watchlist, prices, stats, history, setHistory, 
@@ -18,12 +21,12 @@ function App() {
 
   const [eggs, setEggs] = useState(Number(localStorage.getItem('eggs')) || 0)
   const [showEggs, setShowEggs] = useState(false)
-  const [eggClicks, setEggClicks] = useState(0);
+  const [, setEggClicks] = useState(0);
   const [time, setTime] = useState(new Date())
   const [searchQuery, setSearchQuery] = useState('')
-  const [suggestions, setSuggestions] = useState([]);
-  const searchInputRef = useRef(null);
-  const searchContainerRef = useRef(null); 
+  const [suggestions, setSuggestions] = useState<any[]>([]);
+  const searchInputRef = useRef<HTMLInputElement>(null);
+  const searchContainerRef = useRef<HTMLDivElement>(null); 
 
 
    const handleEggTrigger = () => {
@@ -36,7 +39,7 @@ function App() {
     });
     setTimeout(() => setEggClicks(0), 2000);
   };
-  const onAddStock = async (symbol) => {
+  const onAddStock = async (symbol: string) => {
    const success = await handleStock(symbol.toUpperCase(), {add: true});
    if (success) {
       setSearchQuery('');
@@ -47,7 +50,7 @@ function App() {
 
 
 
-const fetchHistory = async (symbol) => {
+const fetchHistory = async (symbol: string) => {
 
   const apiKey = import.meta.env.VITE_POLYGON_API_KEY;
   const to = new Date().toISOString().split('T')[0];
@@ -60,14 +63,14 @@ const fetchHistory = async (symbol) => {
     const data = await res.json();
     
     if (data.results) {
-      const prices = data.results.map(day => day.c);
+      const prices = data.results.map((day: any) => day.c);
       setHistory(prev => ({ ...prev, [symbol]: prices }));
     }
   } catch (err) { 
     console.error("Polygon historie selhala."); 
   }
 };
-  const searchSymbols = async (query) => {
+  const searchSymbols = async (query: string) => {
     if (query.length < 2) {
       setSuggestions([]);
       return;
@@ -76,7 +79,7 @@ const fetchHistory = async (symbol) => {
       const res = await fetch(`https://finnhub.io/api/v1/search?q=${query}&token=${API_KEY}`);
       const data = await res.json();
       const cleanResults = data.result
-        .filter(s => !s.symbol.includes('.')) 
+        .filter((s: any) => !s.symbol.includes('.')) 
         .slice(0, 7); 
         
       setSuggestions(cleanResults);
@@ -114,8 +117,8 @@ const fetchHistory = async (symbol) => {
   }, [watchlist.length, fetchNews]);
 
   useEffect(() => {
-    const handleKeyDown = (e) => {
-      if (e.key === 'Enter' && document.activeElement.tagName !== 'INPUT') {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Enter' && document.activeElement?.tagName !== 'INPUT') {
         e.preventDefault();
         searchInputRef.current?.focus();
       }
@@ -124,8 +127,8 @@ const fetchHistory = async (symbol) => {
       return () => window.removeEventListener('keydown', handleKeyDown);
     }, []);
   useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (searchContainerRef.current && !searchContainerRef.current.contains(event.target)) {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (searchContainerRef.current && !searchContainerRef.current.contains(event.target as Node)) {
         setSuggestions([]);
     }
   };
@@ -308,13 +311,13 @@ const fetchHistory = async (symbol) => {
               
               <div className="flex gap-3">
                 <button 
-                  onClick={() => {const n = eggs + 1; setEggs(n); localStorage.setItem('eggs', n)}}
+                  onClick={() => {const n = eggs + 1; setEggs(n); localStorage.setItem('eggs', n.toString())}}
                   className="flex-1 bg-indigo-600 text-white py-4 rounded-xl font-black hover:bg-indigo-500 transition-all active:scale-95"
                 >
                   PŘIDAT VEJCE
                 </button>
                 <button 
-                  onClick={() => {const n = Math.max(0, eggs - 1); setEggs(n); localStorage.setItem('eggs', n)}}
+                  onClick={() => {const n = Math.max(0, eggs - 1); setEggs(n); localStorage.setItem('eggs', n.toString())}}
                   className="px-6 bg-slate-700 text-white py-4 rounded-xl font-black hover:bg-slate-600 transition-all"
                 >
                   -
@@ -344,7 +347,7 @@ const fetchHistory = async (symbol) => {
                 shares={item.shares}
                 price={prices[item.symbol]?.p}
                 change={prices[item.symbol]?.d}
-                onUpdateShares={(val) => updateShares(item.symbol, val)}
+                onUpdateShares={(val: string | number) => updateShares(item.symbol, val)}
                 onDelete={() => removeFromWatchlist(item.symbol)}
                 historyData={history[item.symbol]} 
               />
