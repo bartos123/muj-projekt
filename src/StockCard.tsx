@@ -63,7 +63,7 @@ const chartData = historyData ? historyData.map((val, i) => {
         tick={{ fill: '#64748b', fontSize: 10, fontWeight: 'bold' }}
         padding={{ left: 40, right: 20 }} 
         interval={0}
-        tickFormatter={(, index) => {
+        tickFormatter={(value, index) => {
           if (index === 0) return 'Před měsícem';
           if (index === chartData.length - 1) return 'Dnes';
           return '';
@@ -101,9 +101,12 @@ const chartData = historyData ? historyData.map((val, i) => {
           <div className="flex items-center gap-2">
             <button onClick={() => onUpdateShares(Math.max(0, shares - 1))} className="bg-slate-700 w-10 h-8 rounded-lg hover:bg-slate-600 text-white flex justify-center items-center"><CircleMinus size={20} /></button>
             <input 
-              onFocus = {(e) => e.target.select()}
+            
               value={shares} 
-              onChange={(e) => onUpdateShares(e.target.value)}
+              onChange={(e) => {
+                const val = Number(e.target.value);
+                if (!isNaN(val)) onUpdateShares(val);
+              }}
               className="bg-transparent text-center w-full text-white font-bold text-lg outline-none focus:text-indigo-400"
             />
             <button onClick={() => onUpdateShares(shares + 1)} className="bg-slate-700 w-10 h-8 rounded-lg hover:bg-slate-600 text-white flex justify-center items-center"><CirclePlus size={20} /></button>
