@@ -16,7 +16,6 @@ function App() {
       fetchNews, news
     } = useNews(API_KEY, watchlist);
 
-  // STAVY
   const [eggs, setEggs] = useState(Number(localStorage.getItem('eggs')) || 0)
   const [showEggs, setShowEggs] = useState(false)
   const [eggClicks, setEggClicks] = useState(0);
@@ -49,11 +48,9 @@ function App() {
 
 
 const fetchHistory = async (symbol) => {
-  //if (history[symbol]) return;
 
   const apiKey = import.meta.env.VITE_POLYGON_API_KEY;
   const to = new Date().toISOString().split('T')[0];
-  // Změna ze 7 na 30 dní
   const from = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
 
   try {
@@ -63,7 +60,6 @@ const fetchHistory = async (symbol) => {
     const data = await res.json();
     
     if (data.results) {
-      // Teď budeme mít v poli cca 20-22 svíček (protože víkendy)
       const prices = data.results.map(day => day.c);
       setHistory(prev => ({ ...prev, [symbol]: prices }));
     }
@@ -191,7 +187,6 @@ const fetchHistory = async (symbol) => {
       <section ref={searchContainerRef} className="max-w-[1400px] mx-auto mb-12 relative">
         <div className="flex flex-col md:flex-row gap-0 group">
           <div className="relative flex-1">
-            {/* IKONA LUPY */}
             <div className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-indigo-400 transition-colors">
               <Search size={20} />
             </div>
@@ -243,7 +238,7 @@ const fetchHistory = async (symbol) => {
 
       <main className="max-w-[1400px] mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
         
-        {/* DASHBOARD - CELKOVÉ PENÍZE */}
+        {/* DASHBOARD*/}
         <div className="relative rounded-3xl shadow-2xl p-5 border border-white/10 min-h-[160px] flex flex-col justify-between">
 
           <div className={`absolute inset-0 rounded-3xl transition-opacity duration-700 ${celkovyZisk > 0 ? 'opacity-100' : 'opacity-0'} bg-gradient-to-br from-emerald-600 to-teal-900 shadow-emerald-500/20`} />
