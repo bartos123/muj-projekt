@@ -28,43 +28,62 @@ export function usePortfolio(apiKey: string) {
         localStorage.setItem('watchlist', JSON.stringify(newList));
     };
 
-    const handleStock = async (symbol: string, {add = false} = {}) => {
-        try {
-          const res = await fetch(`https://finnhub.io/api/v1/quote?symbol=${symbol}&token=${apiKey}`);
-          const data = await res.json();
+const handleStock = async (symbol: string, {add = false} = {}) => {
+    try {
+        const res = await fetch(`https://finnhub.io/api/v1/quote?symbol=${symbol}&token=${apiKey}`);
+        
+        if (res.status === 429) {
+            console.warn(`Rate limit: ${symbol}`);
+            return null;
+        }
+        
+        const data = await res.json();
 
-          if (data.c === 0) {
-            alert('Neplatný symbol, zkus to znovu.')
-            return null;
-          }
-          setPrices((prev: PriceMap) => ({ ...prev, [symbol]: { p: data.c, d: data.dp } }));
-          
-          if (add) {
-            symbol = symbol.toUpperCase();
-            if (!watchlist.some(item => item.symbol === symbol)) {
-              const newList: StockItem[] = [{ symbol, shares: 1, buyPrice: data.c }, ...watchlist];
-              saveAndSet(newList);
-            } else {
-              alert('Již v seznamu.')
-            }
-          }
-          return data;
-        } catch (error) {
-          if (add) alert('Chyba načítání dat');
-          return null;
-        }
-    };
+        if (add && data.c === 0) {
+            alert('Neplatný symbol, zkus to znovu.');
+            return null;
+        }
+
+        // Aktualizuj cenu jen pokud je validní (> 0), jinak nech cached hodnotu
+        if (data.c > 0) {
+            setPrices((prev: PriceMap) => ({ ...prev, [symbol]: { p: data.c, d: data.dp } }));
+        }
+
+        if (add) {
+            symbol = symbol.toUpperCase();
+            if (!watchlist.some(item => item.symbol === symbol)) {
+                const newList: StockItem[] = [{ symbol, shares: 1, buyPrice: data.c }, ...watchlist];
+                saveAndSet(newList);
+            } else {
+                alert('Již v seznamu.');
+            }
+        }
+        return data;
+    } catch (error) {
+        if (add) alert('Chyba načítání dat');
+        return null;
+    }
+};
 
 
-    const stats = useMemo<PortfolioStats>(() => {
-        return watchlist.reduce((acc: PortfolioStats, item: StockItem) => {
+const stats = useMemo<PortfolioStats>(() => {
+    return watchlist.reduce((acc: PortfolioStats, item: StockItem) => {
         const currentPrice = prices[item.symbol];
         const buyPrice = item.buyPrice || currentPrice?.p || 0;
-        const currentValue = (currentPrice?.p || 0) * Number(item.shares || 0);
-        const investedValue = buyPrice * Number(item.shares || 0);
-        return { total: acc.total + currentValue, invested: acc.invested + investedValue };
-        }, { total: 0, invested: 0 });
-    }, [watchlist, prices]);
+        const shares = Number(item.shares || 0);
+        const currentValue = (currentPrice?.p || 0) * shares;
+        const investedValue = buyPrice * shares;
+
+        // Guard proti NaN
+        const safeCurrentValue = isFinite(currentValue) ? currentValue : 0;
+        const safeInvestedValue = isFinite(investedValue) ? investedValue : 0;
+
+        return { 
+            total: acc.total + safeCurrentValue, 
+            invested: acc.invested + safeInvestedValue 
+        };
+    }, { total: 0, invested: 0 });
+}, [watchlist, prices]);
     
     const removeFromWatchlist = (symbolToRemove: string) => {
         const newList = watchlist.filter(s => s.symbol !== symbolToRemove);
@@ -72,31 +91,38 @@ export function usePortfolio(apiKey: string) {
     };
 
     const updateShares = (symbol: string, newAmount: number | string) => {
-        const currentPrice = prices[symbol]?.p || 0;
-  
-        const newList = watchlist.map((item: StockItem) => {
-        if (item.symbol === symbol) {
-          const oldAmount = Number(item.shares);
-          const newAmountNum = Number(newAmount);
+        const currentPrice = prices[symbol]?.p || 0;
+        const newAmountNum = Math.max(0, Number(newAmount));  // guard záporných hodnot
+        if (isNaN(newAmountNum)) return;  // ignoruj nesmyslný input
 
-          if (newAmountNum > oldAmount && currentPrice > 0) {
-            const addedShares = newAmountNum - oldAmount;
-            const itemBuyPrice = item.buyPrice || currentPrice;
-            
-            const newBuyPrice = (
-              (oldAmount * itemBuyPrice) + 
-              (addedShares * currentPrice)
-            ) / newAmountNum;
+        const newList = watchlist.map((item: StockItem) => {
+            if (item.symbol === symbol) {
+                const oldAmount = Number(item.shares);
 
-            return { ...item, shares: newAmountNum, buyPrice: newBuyPrice };
-          }
+                // Snižování nebo nula - jen updatuj shares, buyPrice nech být
+                if (newAmountNum === 0) {
+                    return { ...item, shares: 0 };
+                }
 
-          return { ...item, shares: newAmountNum };
-        }
-        return item;
-      });
+                // Přidávání shares - přepočítej průměrnou nákupní cenu
+                if (newAmountNum > oldAmount && currentPrice > 0) {
+                    const addedShares = newAmountNum - oldAmount;
+                    const itemBuyPrice = item.buyPrice || currentPrice;
+                    const newBuyPrice = (
+                        (oldAmount * itemBuyPrice) +
+                        (addedShares * currentPrice)
+                    ) / newAmountNum;
 
-      saveAndSet(newList);
+                    // Guard proti NaN/Infinity
+                    if (!isFinite(newBuyPrice)) return { ...item, shares: newAmountNum };
+                    return { ...item, shares: newAmountNum, buyPrice: newBuyPrice };
+                }
+
+                return { ...item, shares: newAmountNum };
+            }
+            return item;
+        });
+        saveAndSet(newList);
     };
 
     return {

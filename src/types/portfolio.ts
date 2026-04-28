@@ -1,4 +1,3 @@
-import StockCard from "../StockCard";
 
 export interface PortfolioStats {
   total: number;  
@@ -28,8 +27,8 @@ export interface NewsItem {
 export interface StockCardProps {
     symbol: string;
     shares: number;
-    price: number;
-    change: number;
+    price?: number;
+    change?: number;
     onUpdateShares: (val: string | number) => void;
     onDelete: () => void;
     buyPrice?: number;
