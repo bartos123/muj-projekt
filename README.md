@@ -30,7 +30,7 @@ The codebase is strictly modularized, separating volatile state logic (custom ho
   <tr>
     <img width="32%" height="32%" alt="obrazek" src="https://github.com/user-attachments/assets/d0725356-0753-45a1-95cd-721b836caddb" />
     <img width="32%" height="32%" alt="obrazek" src="https://github.com/user-attachments/assets/744040bd-2e60-45de-830c-9b7baa914b83" />
-    <img width="32%" height="32%"" alt="obrazek" src="https://github.com/user-attachments/assets/1493db28-7be2-4036-b182-5a625122973a" />
+    <img width="32%" height="32%" alt="obrazek" src="https://github.com/user-attachments/assets/1493db28-7be2-4036-b182-5a625122973a" />
     <img width="32%" height="32%" alt="obrazek" src="https://github.com/user-attachments/assets/ee557999-324c-48b8-9181-4a738fc50edb" />
     <img width="32%" height="32%" alt="obrazek" src="https://github.com/user-attachments/assets/1304de0e-5b95-4160-893f-c567c2f01fa5" />
   </tr>
