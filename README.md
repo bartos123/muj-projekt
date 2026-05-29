@@ -25,6 +25,19 @@ The codebase is strictly modularized, separating volatile state logic (custom ho
 ### 3. THE POSTER EXPERIMENTS (`/components/UI/Poster/variations`)
 - A systematic design exploration consisting of 13 separate programmatic layouts (`Poster1.tsx` to `Poster13.tsx`).
 - This module serves as a creative code archive.
+- #### SELECTED VARIATIONS GALLERY
+<table>
+  <tr>
+    <img width="1872" height="1085" alt="obrazek" src="https://github.com/user-attachments/assets/744040bd-2e60-45de-830c-9b7baa914b83" />
+    <img width="1866" height="1089" alt="obrazek" src="https://github.com/user-attachments/assets/1493db28-7be2-4036-b182-5a625122973a" />
+    <img width="1920" height="1103" alt="obrazek" src="https://github.com/user-attachments/assets/ee557999-324c-48b8-9181-4a738fc50edb" />
+  </tr>
+  <tr>
+    <td align="center"><small>Layout_01 // Strict Axis</small></td>
+    <td align="center"><small>Layout_05 // High Density</small></td>
+    <td align="center"><small>Layout_12 // Vacuum Focus</small></td>
+  </tr>
+</table>
 
 ## RESILIENCE ENGINEERING
 - **Fail-safe Concurrent Loading:** Implemented isolated internal `try-catch` wrappers inside `Promise.all` to prevent cascade failures. If a single stock request fails or hits API rate limits, the application dampens the error, provides cached fallbacks, and keeps the rest of the stream active.
