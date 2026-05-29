@@ -4,7 +4,7 @@ import { useNews } from './hooks/useNews.ts';
 import Dashboard from './components/Dashboard/Dashboard.tsx';
 import { FinnhubSearchResult, PolygonBar, SearchSuggestion, ViewID } from './types/portfolio.ts';
 import { MainNavigation } from './components/UI/Navigation.tsx';
-import { Poster } from './components/UI/Poster/variations/Poster4.tsx';
+import { Poster } from './components/UI/Poster/variations/Poster.tsx';
 import { PortfolioView } from './components/Portfolio/PortfolioView.tsx';
 import { NewsFeed } from './components/News/NewsFeed.tsx';
 
