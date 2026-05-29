@@ -4,7 +4,7 @@ A lightweight stock asset manager built with a strict focus on visual compositio
 
 👉 https://ams-intel.vercel.app/
 
-<img width="1920" height="1112" alt="obrazek" src="https://github.com/user-attachments/assets/f615c78c-202e-4690-a2e0-a49166cf1d40" />
+<img width="1920" height="1115" alt="obrazek" src="https://github.com/user-attachments/assets/b6f37e64-828d-484d-9711-c382ca77b6f2" />
 
 ## TECH STACK
 - **Frontend:** React 18, TypeScript (Strict Mode, 0% `any` types)
@@ -28,6 +28,7 @@ The codebase is strictly modularized, separating volatile state logic (custom ho
 - #### SELECTED VARIATIONS GALLERY
 <table>
   <tr>
+    <img width="1920" height="1112" alt="obrazek" src="https://github.com/user-attachments/assets/d0725356-0753-45a1-95cd-721b836caddb" />
     <img width="1872" height="1085" alt="obrazek" src="https://github.com/user-attachments/assets/744040bd-2e60-45de-830c-9b7baa914b83" />
     <img width="1866" height="1089" alt="obrazek" src="https://github.com/user-attachments/assets/1493db28-7be2-4036-b182-5a625122973a" />
     <img width="1920" height="1103" alt="obrazek" src="https://github.com/user-attachments/assets/ee557999-324c-48b8-9181-4a738fc50edb" />
