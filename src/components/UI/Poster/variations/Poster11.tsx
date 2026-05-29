@@ -1,16 +1,13 @@
 import { DigitalClock } from "../../Clock";
 
 export const Poster = ({ isMarketOpen }: any) => {
-  // Definujeme text, který budeme opakovat
   const text = "asset management system";
 
   return (
     <section className="h-screen w-full bg-black text-white p-0 flex flex-col justify-between overflow-hidden animate-in fade-in duration-1000 select-none">
       
-      {/* HLAVNÍ PLOCHA S RYTMEM */}
       <div className="flex-1 flex flex-col justify-start pt-12 px-8">
         
-        {/* Horní řady: Extrémně roztažené, tvořící texturu */}
         {[...Array(6)].map((_, i) => (
           <div 
             key={i} 
@@ -23,7 +20,6 @@ export const Poster = ({ isMarketOpen }: any) => {
           </div>
         ))}
 
-        {/* Spodní řady: Postupné utahování a centrování (jako na plakátu) */}
         <div className="mt-auto mb-20 flex flex-col items-center gap-4">
           <div className="uppercase font-black text-[3vw] tracking-[1.5vw] opacity-100">
             asset management system
@@ -37,11 +33,9 @@ export const Poster = ({ isMarketOpen }: any) => {
         </div>
       </div>
 
-      {/* FOOTER: Čistá linka (Fronzoniho "Fine Print") */}
       <div className="w-full border-t border-white/20 p-4 flex justify-between items-center font-mono text-[9px] tracking-[0.3em] uppercase">
         <div className="flex gap-8">
-          <span>A.G. Fronzoni / Studio Case</span>
-          <span className="opacity-40">AMS_System_Identity_Ref_1979_2026</span>
+          <span className="opacity-40">AMS</span>
         </div>
         
         <div className="flex gap-12 items-center">

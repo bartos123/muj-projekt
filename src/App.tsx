@@ -7,7 +7,6 @@ import { MainNavigation } from './components/UI/Navigation.tsx';
 import { Poster } from './components/UI/Poster/variations/Poster.tsx';
 import { PortfolioView } from './components/Portfolio/PortfolioView.tsx';
 import { NewsFeed } from './components/News/NewsFeed.tsx';
-import { EggProtocol } from './components/UI/EggCounter.tsx';
 
 function App() {
   const API_KEY = import.meta.env.VITE_FINNHUB_API_KEY;
@@ -17,14 +16,10 @@ function App() {
     handleStock, updateShares, removeFromWatchlist, saveAndSet 
   } = usePortfolio(API_KEY);
   
-  // FIX 1: Vytahujeme z hooku nové stavy pro hlídání offline režimu a chyb
   const { 
     fetchNews, news, isOffline, isError 
   } = useNews(API_KEY, watchlist);
 
-  const [eggs, setEggs] = useState(Number(localStorage.getItem('eggs')) || 0);
-  const [showEggs, setShowEggs] = useState(false);
-  const [, setEggClicks] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
   const [suggestions, setSuggestions] = useState<SearchSuggestion[]>([]);
   const searchInputRef = useRef<HTMLInputElement>(null);
@@ -32,16 +27,6 @@ function App() {
   const [hovered, setHovered] = useState<string | null>(null);
   const [activeView, setActiveView] = useState<ViewID>('POSTER');
 
-  const handleEggTrigger = () => {
-    setEggClicks(prev => {
-      if (prev + 1 >= 5) {
-        setShowEggs(true);
-        return 0; 
-      }
-      return prev + 1;
-    });
-    setTimeout(() => setEggClicks(0), 2000);
-  };
 
   const onAddStock = async (symbol: string) => {
     const success = await handleStock(symbol.toUpperCase(), { add: true });
@@ -109,7 +94,6 @@ function App() {
     return true;
   };
 
-  // Vytvoříme stabilní klíč pro useEffect sledováním samotných symbolů ve watchlistu
   const watchlistSymbolsKey = watchlist.map(i => i.symbol).join(',');
 
   useEffect(() => {
@@ -119,7 +103,6 @@ function App() {
     return () => {
       clearInterval(refreshTimer);
     };
-    // FIX 2: Reagujeme na reálnou změnu složení watchlistu, ne na pouhou délku pole
   }, [watchlistSymbolsKey]);
 
   useEffect(() => {
@@ -187,7 +170,6 @@ function App() {
       <MainNavigation 
         activeView={activeView} 
         onViewChange={setActiveView} 
-        onEggTrigger={handleEggTrigger} 
       />
 
       <main className="flex-1 relative px-5 md:px-8 pb-6 overflow-hidden">
@@ -217,7 +199,6 @@ function App() {
         )}
 
         {activeView === 'INTEL' && (
-          /* FIX 3: Předáváme nové stavy odolnosti přímo do komponenty NewsFeed */
           <NewsFeed 
             news={news} 
             watchlist={watchlist} 
@@ -227,7 +208,6 @@ function App() {
         )}
       </main>
 
-      {showEggs && <EggProtocol eggs={eggs} setEggs={setEggs} onClose={() => setShowEggs(false)} />}
     </div>
   );
 }

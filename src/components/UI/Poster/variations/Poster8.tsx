@@ -2,7 +2,6 @@ export const Poster = () => {
   const text = "ASSET MANAGEMENT SYSTEM";
   const letters = text.split("");
 
-  // Definice řad - od totálního chaosu k řádu
   const rows = [
     { gap: "6vw", opacity: 0.1, scale: 1.1, blur: "2px" },
     { gap: "5vw", opacity: 0.2, scale: 1.05, blur: "1px" },
@@ -32,9 +31,7 @@ export const Poster = () => {
                 key={charIndex}
                 className="font-black uppercase italic leading-none inline-block text-[2.5vw]"
                 style={{ 
-                  // Každé písmeno má svůj vlastní prostor
                   margin: `0 ${row.gap}`,
-                  // Drobná asymetrie pro pocit "ruční" sazby
                   transform: rowIndex < 3 ? `translateY(${(charIndex % 2) * 5}px)` : 'none'
                 }}
               >
@@ -45,13 +42,9 @@ export const Poster = () => {
         ))}
       </div>
 
-      {/* Technická signatura v duchu Fronzoniho plakátů */}
       <div className="absolute bottom-8 left-8 right-8 flex justify-between items-baseline border-t border-white/10 pt-4">
         <div className="font-mono text-[7px] tracking-[0.5em] uppercase opacity-40">
-          A.G. Fronzoni / AMS Context / 2026
-        </div>
-        <div className="font-mono text-[14px] font-black italic tracking-tighter">
-          SHEET_00
+          AMS
         </div>
       </div>
     </section>

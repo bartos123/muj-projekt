@@ -8,10 +8,6 @@ interface LayoutProps {
 export const Layout = ({ children, nav }: LayoutProps) => {
   return (
     <div className="h-screen w-full bg-white text-black font-sans flex flex-col overflow-hidden">
-      
-
-        
-        {/* Navigace a obsah budou automaticky lícovat */}
         <header className="flex-none w-full">
           {nav}
         </header>

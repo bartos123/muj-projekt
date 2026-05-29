@@ -5,7 +5,7 @@ export const Poster = () => {
   const [mouse, setMouse] = useState({ x: 0, y: 0 });
   const text = "ASSET MANAGEMENT SYSTEM";
   const letters = text.split("");
-  const rowCount = 22; // Maximální hustota pro plynulý gradient
+  const rowCount = 22; 
 
   useEffect(() => {
     const handleMove = (e: MouseEvent) => {
@@ -20,11 +20,7 @@ export const Poster = () => {
 
   return (
     <section className="h-screen w-full bg-[#050505] text-white flex flex-col justify-end items-center overflow-hidden select-none relative perspective-[1200px]">
-      
-      {/* 1. ARCHIVAL NOISE LAYER - dává černé hloubku a texturu */}
-      <div className="absolute inset-0 opacity-[0.04] pointer-events-none mix-blend-overlay z-50 bg-[url('https://grainy-gradients.vercel.app/noise.svg')]" />
-
-      {/* 2. THE TYPOGRAPHIC MONUMENT */}
+      <div className="absolute inset-0 opacity-[0.04] pointer-events-none mix-blend-overlay z-50" />
       <div className="flex-1 w-full flex flex-col justify-center items-center px-4 relative z-10">
         <div 
           className="w-full flex flex-col items-center transition-transform duration-700 ease-out will-change-transform"
@@ -35,10 +31,8 @@ export const Poster = () => {
           {Array.from({ length: rowCount }).map((_, idx) => {
             const factor = (rowCount - 1 - idx) / (rowCount - 1);
             
-            // NON-LINEAR WIDTH: Vytváří dokonalý trychtýř (Fronzoniho křivka)
             const rowWidth = 28 + (Math.pow(factor, 2.2) * 72);
             
-            // ANAMORPHIC STRETCH: Písmena v dálce jsou vertikálně protažená
             const vStretch = 1 + (factor * 0.5);
             
             return (
@@ -60,7 +54,6 @@ export const Poster = () => {
                     style={{ 
                       fontSize: `${1.3 + (1 - factor) * 1.5}vw`,
                       transform: `scaleY(${vStretch})`,
-                      // Jemné dýchání každého písmene
                       animation: `drift ${4 + charIdx * 0.2}s ease-in-out infinite alternate`
                     }}
                   >
@@ -73,7 +66,6 @@ export const Poster = () => {
         </div>
       </div>
 
-      {/* 3. SIGNATURE PANEL - Pevná kotva systému */}
       <div className="w-full px-12 py-12 flex justify-between items-end border-t border-white/10 bg-black/80 backdrop-blur-2xl z-[60]">
         <div className="flex flex-col gap-2">
           <div className="font-mono text-[7px] tracking-[0.8em] uppercase text-white/30">

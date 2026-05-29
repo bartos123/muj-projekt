@@ -81,7 +81,6 @@ export interface FinnhubSearchResult {
 export interface NavProps {
   activeView: ViewID;
   onViewChange: (view: ViewID) => void;
-  onEggTrigger: () => void;
 }
 export interface PortfolioViewProps {
   watchlist: StockItem[];

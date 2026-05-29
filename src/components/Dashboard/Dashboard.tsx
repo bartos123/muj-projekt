@@ -16,7 +16,9 @@ const activeAsset = chart.find(a => a.symbol === hovered);
     return (
                 
         <div className="col-span-full grid grid-cols-1 lg:grid-cols-4 border-2 border-black bg-black gap-0.5 mb-12">
-                  {/*LEVÝ PANEL*/}
+        
+        
+        {/*LEVÝ PANEL*/}
         <div className="p-8 flex flex-col justify-center  bg-white">
           <div className="text-[10px] font-black uppercase tracking-[0.4em] text-black/40 mb-2">
             Portfolio Capital

@@ -44,7 +44,6 @@ const handleStock = async (symbol: string, {add = false} = {}) => {
             return null;
         }
 
-        // Aktualizuj cenu jen pokud je validní (> 0), jinak nech cached hodnotu
         if (data.c > 0) {
             setPrices((prev: PriceMap) => ({ ...prev, [symbol]: { p: data.c, d: data.dp } }));
         }
@@ -92,19 +91,17 @@ const stats = useMemo<PortfolioStats>(() => {
 
     const updateShares = (symbol: string, newAmount: number | string) => {
         const currentPrice = prices[symbol]?.p || 0;
-        const newAmountNum = Math.max(0, Number(newAmount));  // guard záporných hodnot
-        if (isNaN(newAmountNum)) return;  // ignoruj nesmyslný input
+        const newAmountNum = Math.max(0, Number(newAmount));  
+        if (isNaN(newAmountNum)) return;  
 
         const newList = watchlist.map((item: StockItem) => {
             if (item.symbol === symbol) {
                 const oldAmount = Number(item.shares);
 
-                // Snižování nebo nula - jen updatuj shares, buyPrice nech být
                 if (newAmountNum === 0) {
                     return { ...item, shares: 0 };
                 }
 
-                // Přidávání shares - přepočítej průměrnou nákupní cenu
                 if (newAmountNum > oldAmount && currentPrice > 0) {
                     const addedShares = newAmountNum - oldAmount;
                     const itemBuyPrice = item.buyPrice || currentPrice;
@@ -113,7 +110,6 @@ const stats = useMemo<PortfolioStats>(() => {
                         (addedShares * currentPrice)
                     ) / newAmountNum;
 
-                    // Guard proti NaN/Infinity
                     if (!isFinite(newBuyPrice)) return { ...item, shares: newAmountNum };
                     return { ...item, shares: newAmountNum, buyPrice: newBuyPrice };
                 }

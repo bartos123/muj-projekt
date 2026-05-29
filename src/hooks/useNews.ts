@@ -1,8 +1,7 @@
 import { useState, useCallback, useEffect } from 'react';
-import { StockItem, NewsItem } from '../types/portfolio'; // FIX: Musíme použít StockNewsItem
+import { StockItem, NewsItem } from '../types/portfolio'; 
 
 export function useNews(apiKey: string, watchlist: StockItem[]) {
-  // 1. KROK: Cache & Offline stavy
   const [news, setNews] = useState<NewsItem[]>(() => {
     const cached = localStorage.getItem('newsCache');
     return cached ? JSON.parse(cached) : [];
@@ -32,7 +31,6 @@ export function useNews(apiKey: string, watchlist: StockItem[]) {
     const to = new Date().toISOString().split('T')[0];
     const from = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
 
-    // --- BEZPEČNÁ FUNKCE 1: Globální zprávy ---
     const fetchGlobalNews = async () => {
       try {
         const res = await fetch(`https://finnhub.io/api/v1/news?category=business&token=${apiKey}`);
@@ -41,11 +39,10 @@ export function useNews(apiKey: string, watchlist: StockItem[]) {
       } catch (err) {
         console.error("Global news failed:", err);
         setIsError(true);
-        return []; // Fallback: prázdné pole, aby nespadl zbytek
+        return []; 
       }
     };
 
-    // --- BEZPEČNÁ FUNKCE 2: Zprávy pro jednu akcii ---
     const fetchSingleStockNews = async (symbol: string) => {
       try {
         const res = await fetch(`https://finnhub.io/api/v1/company-news?symbol=${symbol}&from=${from}&to=${to}&token=${apiKey}`);
@@ -54,31 +51,26 @@ export function useNews(apiKey: string, watchlist: StockItem[]) {
         return Array.isArray(data) ? data.map((n: any) => ({ ...n, relatedSymbol: symbol })) : [];
       } catch (err) {
         console.error(`Stock ${symbol} news failed:`, err);
-        return []; // Fallback: prázdné pole pro tuto konkrétní akcii
+        return []; 
       }
     };
 
-    // --- HLAVNÍ LOGIKA: Spuštění a míchání ---
     try {
-      // Zabalíme do Promise.all, ale díky vnitřním try-catch už nám nehrozí pád
       const globalNewsReq = fetchGlobalNews();
       const stockReqs = watchlist.map(item => fetchSingleStockNews(item.symbol));
 
       const [globalNews, ...stockResults] = await Promise.all([globalNewsReq, ...stockReqs]);
 
-      // 1. Zpracování zpráv z watchlistu
       const stockArticles = stockResults.flat() as NewsItem[];
       const uniqueStockNews = stockArticles
         .filter((v, i, a) => a.findIndex(t => t.id === v.id) === i)
         .sort((a, b) => b.datetime - a.datetime);
 
-      // 2. Příprava globálních zpráv
       const formattedGlobal = (Array.isArray(globalNews) ? globalNews : []).map(n => ({
         ...n,
         relatedSymbol: 'MARKET'
       })) as NewsItem[];
 
-      // 3. Míchání
       let finalFeed = [...uniqueStockNews];
       if (finalFeed.length < targetCount) {
         const remainingSlots = targetCount - finalFeed.length;
@@ -91,7 +83,6 @@ export function useNews(apiKey: string, watchlist: StockItem[]) {
 
       const sortedFeed = finalFeed.sort((a, b) => b.datetime - a.datetime);
 
-      // 4. Uložení do stavu a Cache
       setNews(sortedFeed);
       localStorage.setItem('newsCache', JSON.stringify(sortedFeed));
 
@@ -101,6 +92,5 @@ export function useNews(apiKey: string, watchlist: StockItem[]) {
     }
   }, [apiKey, watchlistKey]);
 
-  // Vracíme i offline a error stavy pro UI
   return { fetchNews, news, isOffline, isError };
 }
